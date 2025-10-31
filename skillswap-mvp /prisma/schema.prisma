@@ -1,0 +1,60 @@
+generator client {
+datasource db {
+provider = "sqlite"
+url = env("DATABASE_URL")
+}
+
+model User {
+id Int @id @default(autoincrement())
+email String @unique
+name String?
+password String
+credits Int @default(5) // start users with 5 hours
+skills Skill[]
+swapsSent Swap[] @relation("sentBy")
+swapsRecv Swap[] @relation("recvBy")
+reviews Review[]
+createdAt DateTime @default(now())
+}
+
+model Skill {
+id Int @id @default(autoincrement())
+title String
+description String?
+owner User @relation(fields: [ownerId], references: [id])
+ownerId Int
+createdAt DateTime @default(now())
+}
+
+model Swap {
+id Int @id @default(autoincrement())
+sender User @relation("sentBy", fields: [senderId], references: [id])
+senderId Int
+receiver User @relation("recvBy", fields: [receiverId], references: [id])
+receiverId Int
+skillId Int
+skill Skill @relation(fields: [skillId], references: [id])
+hours Int @default(1)
+status String @default("requested") // requested, accepted, completed, cancelled
+createdAt DateTime @default(now())
+}
+
+model CreditTransaction {
+id Int @id @default(autoincrement())
+user User @relation(fields: [userId], references: [id])
+userId Int
+amount Int
+note String?
+createdAt DateTime @default(now())
+}
+
+model Review {
+id Int @id @default(autoincrement())
+author User @relation(fields: [authorId], references: [id])
+authorId Int
+target User @relation(fields: [targetId], references: [id])
+targetId Int
+rating Int
+comment String?
+createdAt DateTime @default(now())
+}
